@@ -1,0 +1,2597 @@
+@page "/admin"
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<div class="admin-dashboard-page">
+
+    <!-- HEADER BAR -->
+    <header class="admin-header">
+        <div class="admin-header-container">
+            <div class="brand-info">
+                <img src="logotipo/waylan.png" alt="Waylan Logo" class="admin-logo" />
+                <span class="admin-badge">PANEL ADMINISTRATIVO</span>
+            </div>
+            <div class="user-info-bar">
+                <span>Hola, <strong>@ApiService.CurrentUser?.Nombre</strong></span>
+                <button class="btn-logout" @onclick="HandleLogout">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    @if (!ApiService.IsLoggedIn)
+    {
+        <!-- LOGIN PANEL FOR ADMINISTRATOR -->
+        <div class="admin-login-box">
+            <div class="login-card">
+                <h2>Iniciar Sesión como Administrador</h2>
+                <p>Ingresa tus credenciales autorizadas de Waylan Origin.</p>
+
+                @if (!string.IsNullOrEmpty(loginErrorMessage))
+                {
+                    <div class="error-alert">@loginErrorMessage</div>
+                }
+
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" @bind="loginEmail" placeholder="admin@waylan.com" class="form-control-admin" />
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" @bind="loginPassword" placeholder="••••••••" class="form-control-admin" />
+                </div>
+                <button class="btn-admin-submit" @onclick="HandleLogin" type="button">INGRESAR AL PANEL</button>
+            </div>
+        </div>
+    }
+    else if (!ApiService.IsAdmin)
+    {
+        <div class="unauthorized-box">
+            <div class="unauthorized-card">
+                <h2>Acceso Denegado</h2>
+                <p>Tu cuenta no cuenta con permisos de administrador en el sistema.</p>
+                <button class="btn-admin-submit" @onclick='() => NavigationManager.NavigateTo("./")'>IR AL INICIO</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- MAIN DASHBOARD CONTENT -->
+        <div class="dashboard-body">
+
+            <!-- SIDE NAVIGATION TABS -->
+            <aside class="dashboard-sidebar">
+                <button class="sidebar-tab-btn @(activeTab == "productos" ? "active" : "")"
+                        @onclick='() => SetActiveTab("productos")'>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12,2 2,22 22,22" />
+                    </svg>
+                    Gestión Productos
+                </button>
+                <button class="sidebar-tab-btn @(activeTab == "categorias" ? "active" : "")"
+                        @onclick='() => SetActiveTab("categorias")'>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="9" />
+                        <rect x="14" y="3" width="7" height="5" />
+                        <rect x="14" y="12" width="7" height="9" />
+                        <rect x="3" y="16" width="7" height="5" />
+                    </svg>
+                    Gestión Categorías
+                </button>
+                <button class="sidebar-tab-btn @(activeTab == "pedidos" ? "active" : "")"
+                        @onclick='() => SetActiveTab("pedidos")'>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    Pedidos de Clientes
+                </button>
+                <button class="sidebar-tab-btn @(activeTab == "usuarios" ? "active" : "")"
+                        @onclick='() => SetActiveTab("usuarios")'>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Control Usuarios
+                </button>
+                <button class="sidebar-tab-btn @(activeTab == "notas" ? "active" : "")"
+                        @onclick='() => SetActiveTab("notas")'>
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v8" />
+                        <path d="M8 12h8" />
+                    </svg>
+                    Gestión Notas de Sabor
+                </button>
+                <button class="sidebar-tab-btn @(activeTab == "cita" ? "active" : "")"
+                 @onclick='() => SetActiveTab("cita")'>
+                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                   <circle cx="12" cy="8" r="4" />
+                  <path d="M12 20v-8" />
+                  <path d="M9 14l3 3l3-3" />
+                  </svg>
+                  Editar Cita Semanal
+                </button>
+
+                <button class="sidebar-tab-btn @(activeTab == "productores" ? "active" : "")"
+                 @onclick='() => SetActiveTab("productores")'>
+                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <circle cx="12" cy="8" r="4" />
+                 <path d="M12 20v-8" />
+                 <path d="M9 14l3 3l3-3" />
+                 </svg>
+                 Gestión Productores
+               </button>
+
+               <button class="sidebar-tab-btn @(activeTab == "organizaciones" ? "active" : "")"
+                     @onclick='() => SetActiveTab("organizaciones")'>
+                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2l9 4v6c0 5-4 9-9 10-5-1-9-5-9-10V6l9-4z" />
+                 </svg>
+                 Organizaciones
+               </button>
+
+
+
+
+            </aside>
+
+            <!-- ACTION DISPLAY PANEL -->
+            <main class="dashboard-content-panel">
+
+                @if (activeTab == "productos")
+                {
+                    <!-- TAB 1: PRODUCT MANAGEMENT -->
+                    <div class="panel-section">
+                        <div class="panel-header-row">
+                            <h2>Productos Registrados</h2>
+                            <button class="btn-create-new" @onclick="OpenCreateProductModal">NUEVO PRODUCTO</button>
+                        </div>
+
+                        @if (products.Any(p => p.Stock < 5))
+                        {
+                            <div class="stock-warning-banner">
+                                <div class="stock-banner-header">
+                                    <span class="stock-alert-icon" style="font-size: 1.2rem;">⚠️</span>
+                                    <div>
+                                        <strong>ALERTA DE INVENTARIO:</strong>
+                                        <span>Hay @products.Count(p => p.Stock < 5) producto(s) que requieren reabastecimiento pronto.</span>
+                                    </div>
+                                </div>
+                                <div class="stock-banner-pills">
+                                    @if (products.Any(p => p.Stock <= 0))
+                                    {
+                                        <span class="stock-pill-badge out-of-stock-pill">
+                                            🔴 @products.Count(p => p.Stock <= 0) AGOTADO(S) (0 un.)
+                                        </span>
+                                    }
+                                    @if (products.Any(p => p.Stock > 0 && p.Stock < 5))
+                                    {
+                                        <span class="stock-pill-badge low-stock-pill">
+                                            ⚠️ @products.Count(p => p.Stock > 0 && p.Stock < 5) STOCK CRÍTICO (&lt;5 un.)
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div class="table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Imagen</th>
+                                        <th>Nombre</th>
+                                        <th>Categoría</th>
+                                        <th>Tueste</th>
+                                        <th>Proceso</th>
+                                        <th>Precio</th>
+                                        <th>Stock</th>
+                                        <th>Notas</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var p in PaginatedProducts)
+                                    {
+                                        <tr class="@(p.Stock <= 0 ? "row-out-of-stock" : p.Stock < 5 ? "row-low-stock" : "")">
+                                            <td><strong>#@p.Id</strong></td>
+                                            <td>
+                                                <img src="@ApiService.GetFullImageUrl(p.ImagenUrl)" alt="@p.Nombre"
+                                                     class="admin-prod-img" />
+                                            </td>
+                                            <td><strong>@p.Nombre</strong></td>
+                                            <td>@(string.IsNullOrEmpty(p.CategoriaNombre) ? p.Formato : p.CategoriaNombre)</td>
+                                            <td><span class="badge-tueste">@(string.IsNullOrEmpty(p.Tueste) ? "Medio" :
+                                                                                        p.Tueste)</span></td>
+                                                <td><span class="badge-proceso">@(string.IsNullOrEmpty(p.Proceso) ? "Lavado" :
+                                                                                            p.Proceso)</span></td>
+                                                    <td><strong>$@p.Precio.ToString("N0") COP</strong></td>
+                                                    <td>
+                                                        @if (p.Stock <= 0)
+                                                        {
+                                                            <span class="stock-badge out-of-stock">
+                                                                🔴 AGOTADO (0 un.)
+                                                            </span>
+                                                        }
+                                                        else if (p.Stock < 5)
+                                                        {
+                                                            <span class="stock-badge low-stock">
+                                                                ⚠️ CRÍTICO (@p.Stock un.)
+                                                            </span>
+                                                        }
+                                                        else if (p.Stock <= 10)
+                                                        {
+                                                            <span class="stock-badge low-stock-soft">
+                                                                📦 @p.Stock un.
+                                                            </span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="stock-badge in-stock">
+                                                                ✅ @p.Stock un.
+                                                            </span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (p.Notas != null && p.Notas.Any())
+                                                        {
+                                                            <div class="notes-pill-group">
+                                                                @foreach (var n in p.Notas)
+                                                                {
+                                                                    <span class="note-pill">@n.Nombre</span>
+                                                                }
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">-</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <span class="status-badge @(p.Activo ? "active" : "inactive")">
+                                                            @(p.Activo ? "Activo" : "Inactivo")
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn-action-edit"
+                                                                @onclick="() => OpenEditProductModal(p)">Editar</button>
+                                                        <button class="btn-action-status" @onclick="() => ToggleProductStatus(p)">
+                                                            @(p.Activo ? "Desactivar" : "Activar")
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="admin-pagination-bar">
+                                    <div class="pagination-info">
+                                        <span>Mostrando <strong>@StartItemProducts - @EndItemProducts</strong> de <strong>@products.Count</strong> registros</span>
+                                        <span class="pagination-divider-v">|</span>
+                                        <span>Página <strong>@currentPageProducts</strong> de <strong>@TotalPagesProducts</strong></span>
+                                    </div>
+                                    <div class="pagination-controls">
+                                        <div class="page-size-picker">
+                                            <span>Mostrar</span>
+                                            <select value="@pageSizeProducts" @onchange="OnPageSizeProductsChanged" class="select-page-size">
+                                                <option value="5">5</option>
+                                                <option value="10">10</option>
+                                                <option value="20">20</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                        </div>
+                                        <div class="pagination-buttons">
+                                            <button class="btn-page-nav" disabled="@(currentPageProducts <= 1)" @onclick="() => GoToPageProducts(1)" title="Primera página">««</button>
+                                            <button class="btn-page-nav" disabled="@(currentPageProducts <= 1)" @onclick="() => GoToPageProducts(currentPageProducts - 1)" title="Página anterior">‹</button>
+                                            <select value="@currentPageProducts" @onchange='(e) => GoToPageProducts(int.Parse(e.Value?.ToString() ?? "1"))' class="select-page-number">
+                                                @for (int i = 1; i <= TotalPagesProducts; i++)
+                                                {
+                                                    <option value="@i">@i</option>
+                                                }
+                                            </select>
+                                            <button class="btn-page-nav" disabled="@(currentPageProducts >= TotalPagesProducts)" @onclick="() => GoToPageProducts(currentPageProducts + 1)" title="Página siguiente">›</button>
+                                            <button class="btn-page-nav" disabled="@(currentPageProducts >= TotalPagesProducts)" @onclick="() => GoToPageProducts(TotalPagesProducts)" title="Última página">»»</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                else if (activeTab == "categorias")
+                        {
+                            <!-- TAB 2: CATEGORIES MANAGEMENT -->
+                            <div class="panel-section">
+                                <div class="panel-header-row">
+                                    <h2>Categorías de Productos</h2>
+                                    <div class="add-category-inline">
+                                        <input type="text" @bind="newCategoryName" placeholder="Nueva Categoría"
+                                               class="form-control-inline" />
+                                        <button class="btn-create-new" @onclick="CreateCategory">AGREGAR</button>
+                                    </div>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Nombre</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var c in PaginatedCategories)
+                                            {
+                                                <tr>
+                                                    <td><strong>#@c.Id</strong></td>
+                                                    <td>
+                                                        @if (editingCategoryId == c.Id)
+                                                        {
+                                                            <input type="text" @bind="editingCategoryName" class="form-control-table" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @c.Nombre
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <span class="status-badge @(c.Activo ? "active" : "inactive")">
+                                                            @(c.Activo ? "Activo" : "Inactivo")
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @if (editingCategoryId == c.Id)
+                                                        {
+                                                            <button class="btn-action-save"
+                                                                    @onclick="() => SaveCategoryEdit(c)">Guardar</button>
+                                                            <button class="btn-action-cancel" @onclick="CancelCategoryEdit">Cancelar</button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button class="btn-action-edit"
+                                                                    @onclick="() => StartCategoryEdit(c)">Editar</button>
+                                                            <button class="btn-action-status" @onclick="() => ToggleCategoryStatus(c)">
+                                                                @(c.Activo ? "Desactivar" : "Activar")
+                                                            </button>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="admin-pagination-bar">
+                                    <div class="pagination-info">
+                                        <span>Mostrando <strong>@StartItemCategories - @EndItemCategories</strong> de <strong>@categories.Count</strong> registros</span>
+                                        <span class="pagination-divider-v">|</span>
+                                        <span>Página <strong>@currentPageCategories</strong> de <strong>@TotalPagesCategories</strong></span>
+                                    </div>
+                                    <div class="pagination-controls">
+                                        <div class="page-size-picker">
+                                            <span>Mostrar</span>
+                                            <select value="@pageSizeCategories" @onchange="OnPageSizeCategoriesChanged" class="select-page-size">
+                                                <option value="5">5</option>
+                                                <option value="10">10</option>
+                                                <option value="20">20</option>
+                                                <option value="50">50</option>
+                                            </select>
+                                        </div>
+                                        <div class="pagination-buttons">
+                                            <button class="btn-page-nav" disabled="@(currentPageCategories <= 1)" @onclick="() => GoToPageCategories(1)" title="Primera página">««</button>
+                                            <button class="btn-page-nav" disabled="@(currentPageCategories <= 1)" @onclick="() => GoToPageCategories(currentPageCategories - 1)" title="Página anterior">‹</button>
+                                            <select value="@currentPageCategories" @onchange='(e) => GoToPageCategories(int.Parse(e.Value?.ToString() ?? "1"))' class="select-page-number">
+                                                @for (int i = 1; i <= TotalPagesCategories; i++)
+                                                {
+                                                    <option value="@i">@i</option>
+                                                }
+                                            </select>
+                                            <button class="btn-page-nav" disabled="@(currentPageCategories >= TotalPagesCategories)" @onclick="() => GoToPageCategories(currentPageCategories + 1)" title="Página siguiente">›</button>
+                                            <button class="btn-page-nav" disabled="@(currentPageCategories >= TotalPagesCategories)" @onclick="() => GoToPageCategories(TotalPagesCategories)" title="Última página">»»</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (activeTab == "pedidos")
+                        {
+                            <!-- TAB 3: ORDERS MANAGEMENT -->
+                            <div class="panel-section">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                                    <h2>Pedidos Recibidos</h2>
+                                    @if (pendingOrderStateChanges.Any())
+                                    {
+                                        <button class="btn-save" @onclick="SavePendingOrderStateChanges"
+                                                style="background-color: #B89A5E; color: #1A100A; border: none; font-weight: 800; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                                            💾 GUARDAR CAMBIOS DE PEDIDOS (@pendingOrderStateChanges.Count PENDIENTES)
+                                        </button>
+                                    }
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(orderStatusSuccessMessage))
+                                {
+                                    <div
+                                        style="background-color: #E2F3E7; color: #2F6F4C; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 700;">
+                                        @orderStatusSuccessMessage
+                                    </div>
+                                }
+
+                                <div class="admin-filter-bar">
+                                    <div class="search-input-wrapper">
+                                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                        </svg>
+                                        <input type="text" @bind="searchOrdersQuery" @bind:event="oninput" placeholder="Buscar por Código, Nombre de usuario o Email..." class="admin-search-input" />
+                                        @if (!string.IsNullOrEmpty(searchOrdersQuery))
+                                        {
+                                            <button class="btn-clear-search" @onclick='() => searchOrdersQuery = ""'>×</button>
+                                        }
+                                    </div>
+                                    <div class="filter-dropdown-wrapper">
+                                        <label>Estado:</label>
+                                        <select @bind="filterOrderStatus" class="admin-filter-select">
+                                            <option value="Todos">Todos los Estados</option>
+                                            <option value="Pendiente">Pendiente</option>
+                                            <option value="EnPreparacion">En Preparación</option>
+                                            <option value="EnTransito">En Tránsito</option>
+                                            <option value="EnReparto">En Reparto</option>
+                                            <option value="Entregado">Entregado</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="table-container">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Código Seguimiento</th>
+                                                <th>Fecha</th>
+                                                <th>Usuario / Email</th>
+                                                <th>Dirección</th>
+                                                <th>Total</th>
+                                                <th>Estado Pago</th>
+                                                <th>Estado Pedido</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var o in PaginatedOrders)
+                                            {
+                                                bool isPending = pendingOrderStateChanges.ContainsKey(o.Codigo);
+                                                string currentState = isPending ? pendingOrderStateChanges[o.Codigo] : o.Estado;
+
+                                                <tr style="@(isPending ? "background-color: #FEF9F0;" : "")">
+                                                    <td><code>#@o.Id</code></td>
+                                                    <td><strong>@o.Codigo</strong></td>
+                                                    <td>@o.Fecha.ToLocalTime().ToString("g")</td>
+                                                    <td>
+                                                        <div><strong>@(string.IsNullOrEmpty(o.NombreUsuario) ? "Cliente" :
+                                                                                                        o.NombreUsuario)</strong></div>
+                                                            <small class="text-muted"
+                                                                   style="font-size: 0.72rem; color: #706B64;">@o.EmailCliente</small>
+                                                        </td>
+                                                        <td class="address-cell">
+                                                            <div class="address-card-box">
+                                                                <svg class="address-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                                                    <circle cx="12" cy="10" r="3" />
+                                                                </svg>
+                                                                <span class="address-text">@(string.IsNullOrEmpty(o.Direccion) ? "Dirección no especificada" : o.Direccion)</span>
+                                                            </div>
+                                                        </td>
+                                                        <td><strong>$@o.Total.ToString("N0") COP</strong></td>
+                                                        <td>
+                                                            <span class="status-badge active"
+                                                                  style="font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:12px; text-transform:uppercase;">
+                                                                💳 @o.EstadoPago
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <select class="select-order-state @GetOrderStateBadgeClass(currentState)" value="@currentState"
+                                                                    @onchange='(e) => OnOrderStateSelected(o.Codigo, e.Value?.ToString() ?? "")'>
+                                                                <option value="Pendiente">⏳ Pendiente</option>
+                                                                <option value="EnPreparacion">☕ En Preparación</option>
+                                                                <option value="EnTransito">🚚 En Tránsito</option>
+                                                                <option value="EnReparto">📦 En Reparto</option>
+                                                                <option value="Entregado">✅ Entregado</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <div style="display: flex; gap: 6px;">
+                                                                <button class="btn-table-action edit" @onclick="() => ViewOrderDetails(o)"
+                                                                        title="Ver Productos">
+                                                                    👁️ Productos (@o.Detalles.Count)
+                                                                </button>
+                                                                @if (isPending)
+                                                                {
+                                                                    <button class="btn-save" @onclick="() => SaveSingleOrderState(o.Codigo)"
+                                                                            style="padding: 4px 8px; font-size: 0.75rem;">
+                                                                        💾 Guardar
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="admin-pagination-bar">
+                                        <div class="pagination-info">
+                                            <span>Mostrando <strong>@StartItemOrders - @EndItemOrders</strong> de <strong>@FilteredOrders.Count</strong> registros</span>
+                                            <span class="pagination-divider-v">|</span>
+                                            <span>Página <strong>@currentPageOrders</strong> de <strong>@TotalPagesOrders</strong></span>
+                                        </div>
+                                        <div class="pagination-controls">
+                                            <div class="page-size-picker">
+                                                <span>Mostrar</span>
+                                                <select value="@pageSizeOrders" @onchange="OnPageSizeOrdersChanged" class="select-page-size">
+                                                    <option value="5">5</option>
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                            </div>
+                                            <div class="pagination-buttons">
+                                                <button class="btn-page-nav" disabled="@(currentPageOrders <= 1)" @onclick="() => GoToPageOrders(1)" title="Primera página">««</button>
+                                                <button class="btn-page-nav" disabled="@(currentPageOrders <= 1)" @onclick="() => GoToPageOrders(currentPageOrders - 1)" title="Página anterior">‹</button>
+                                                <select value="@currentPageOrders" @onchange='(e) => GoToPageOrders(int.Parse(e.Value?.ToString() ?? "1"))' class="select-page-number">
+                                                    @for (int i = 1; i <= TotalPagesOrders; i++)
+                                                    {
+                                                        <option value="@i">@i</option>
+                                                    }
+                                                </select>
+                                                <button class="btn-page-nav" disabled="@(currentPageOrders >= TotalPagesOrders)" @onclick="() => GoToPageOrders(currentPageOrders + 1)" title="Página siguiente">›</button>
+                                                <button class="btn-page-nav" disabled="@(currentPageOrders >= TotalPagesOrders)" @onclick="() => GoToPageOrders(TotalPagesOrders)" title="Última página">»»</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                else if (activeTab == "usuarios")
+                            {
+                                <!-- TAB 4: USER CONTROL -->
+                                <div class="panel-section">
+                                    <h2>Usuarios Registrados</h2>
+
+                                    <div class="admin-filter-bar">
+                                        <div class="search-input-wrapper">
+                                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="11" cy="11" r="8"></circle>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                            </svg>
+                                            <input type="text" @bind="searchUsersQuery" @bind:event="oninput" placeholder="Buscar usuario por Nombre, Email o Rol..." class="admin-search-input" />
+                                            @if (!string.IsNullOrEmpty(searchUsersQuery))
+                                            {
+                                                <button class="btn-clear-search" @onclick='() => searchUsersQuery = ""'>×</button>
+                                            }
+                                        </div>
+                                        <div class="filter-dropdown-wrapper">
+                                            <label>Rol:</label>
+                                            <select @bind="filterUserRole" class="admin-filter-select">
+                                                <option value="Todos">Todos los Roles</option>
+                                                <option value="Admin">Administrador</option>
+                                                <option value="Cliente">Cliente</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="table-container">
+                                        <table class="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Correo Electrónico</th>
+                                                    <th>Rol de Acceso</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var u in PaginatedUsers)
+                                                {
+                                                    <tr>
+                                                        <td>@u.Nombre</td>
+                                                        <td>@u.Email</td>
+                                                        <td>
+                                                            <span class="role-badge @(u.Rol == "Admin" ? "admin" : "client")">
+                                                                @u.Rol
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="status-badge @(u.Activo ? "active" : "inactive")">
+                                                                @(u.Activo ? "Activo" : "Inactivo")
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            @if (u.Email != ApiService.CurrentUser?.Email)
+                                                            {
+                                                                <button class="btn-action-status" @onclick="() => ToggleUserStatus(u)">
+                                                                    @(u.Activo ? "Desactivar" : "Activar")
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="self-label">Cuenta Actual</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="admin-pagination-bar">
+                                        <div class="pagination-info">
+                                            <span>Mostrando <strong>@StartItemUsers - @EndItemUsers</strong> de <strong>@FilteredUsers.Count</strong> registros</span>
+                                            <span class="pagination-divider-v">|</span>
+                                            <span>Página <strong>@currentPageUsers</strong> de <strong>@TotalPagesUsers</strong></span>
+                                        </div>
+                                        <div class="pagination-controls">
+                                            <div class="page-size-picker">
+                                                <span>Mostrar</span>
+                                                <select value="@pageSizeUsers" @onchange="OnPageSizeUsersChanged" class="select-page-size">
+                                                    <option value="5">5</option>
+                                                    <option value="10">10</option>
+                                                    <option value="20">20</option>
+                                                    <option value="50">50</option>
+                                                </select>
+                                            </div>
+                                            <div class="pagination-buttons">
+                                                <button class="btn-page-nav" disabled="@(currentPageUsers <= 1)" @onclick="() => GoToPageUsers(1)" title="Primera página">««</button>
+                                                <button class="btn-page-nav" disabled="@(currentPageUsers <= 1)" @onclick="() => GoToPageUsers(currentPageUsers - 1)" title="Página anterior">‹</button>
+                                                <select value="@currentPageUsers" @onchange='(e) => GoToPageUsers(int.Parse(e.Value?.ToString() ?? "1"))' class="select-page-number">
+                                                    @for (int i = 1; i <= TotalPagesUsers; i++)
+                                                    {
+                                                        <option value="@i">@i</option>
+                                                    }
+                                                </select>
+                                                <button class="btn-page-nav" disabled="@(currentPageUsers >= TotalPagesUsers)" @onclick="() => GoToPageUsers(currentPageUsers + 1)" title="Página siguiente">›</button>
+                                                <button class="btn-page-nav" disabled="@(currentPageUsers >= TotalPagesUsers)" @onclick="() => GoToPageUsers(TotalPagesUsers)" title="Última página">»»</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else if (activeTab == "notas")
+                            {
+                                <!-- TAB 5: FLAVOR NOTES MANAGEMENT -->
+                                <div class="panel-section">
+                                    <div class="panel-header-row">
+                                        <h2>Notas de Sabor de Productos</h2>
+                                        <div class="add-category-inline">
+                                            <input type="text" @bind="newNoteName" placeholder="Nueva Nota de Sabor (Ej: Miel, Frutos Rojos)"
+                                                   class="form-control-inline" />
+                                            <button class="btn-create-new" @onclick="CreateNote">AGREGAR NOTA</button>
+                                        </div>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(noteActionMessage))
+                                    {
+                                        <div style="background-color: #E2F3E7; color: #2F6F4C; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 700;">
+                                            @noteActionMessage
+                                        </div>
+                                    }
+
+                                    <div class="table-container">
+                                        <table class="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre de la Nota de Sabor</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var n in availableNotes)
+                                                {
+                                                    <tr>
+                                                        <td><strong>#@n.Id</strong></td>
+                                                        <td>
+                                                            @if (editingNoteId == n.Id)
+                                                            {
+                                                                <input type="text" @bind="editingNoteName" class="form-control-table" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <span style="display: inline-block; background: #FAF6F0; border: 1px solid #E5E2DC; padding: 4px 12px; border-radius: 20px; font-weight: 600; color: #5C4033;">
+                                                                    ☕ @n.Nombre
+                                                                </span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @if (editingNoteId == n.Id)
+                                                            {
+                                                                <button class="btn-action-save" @onclick="() => SaveNoteEdit(n)">Guardar</button>
+                                                                <button class="btn-action-cancel" @onclick="CancelNoteEdit">Cancelar</button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn-action-edit" @onclick="() => StartNoteEdit(n)">Editar</button>
+                                                            }
+
+                                                           
+                                                        </td>
+                                                    </tr>
+                                                }
+
+                                              
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            }
+
+                            else if (activeTab == "cita")
+                            {
+                               <AdminCitaSemanal />
+                            }
+
+                            else if (activeTab == "productores")
+                            {
+                                <AdminProductores />
+                            }
+
+                            else if (activeTab == "organizaciones")
+                           {
+                              <AdminOrganizacion />
+                        }
+
+
+
+
+                        </main>
+                    </div>
+                }
+
+                <!-- POPUP MODAL FOR PRODUCT CREATE/EDIT -->
+                @if (showProductModal)
+                {
+                    <div class="modal-backdrop">
+                        <div class="modal-box">
+                            <div class="modal-header">
+                                <h3>@(isEditingProduct ? "Editar Producto" : "Nuevo Producto")</h3>
+                                <button class="btn-close-modal" @onclick="CloseProductModal">×</button>
+                            </div>
+                            <div class="modal-body">
+
+                                @if (!string.IsNullOrEmpty(formErrorMessage))
+                                {
+                                    <div class="error-alert">@formErrorMessage</div>
+                                }
+
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label>Nombre Comercial</label>
+                                        <input type="text" @bind="productFormNombre" placeholder="Waylan Classic"
+                                               class="form-control-admin" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Categoría</label>
+                                        <select @bind="productFormIdCategoria" class="form-control-admin">
+                                            @foreach (var cat in categories)
+                                            {
+                                                <option value="@cat.Id">@cat.Nombre</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label>Tipo de Tueste</label>
+                                        <select @bind="productFormTueste" class="form-control-admin">
+                                            <option value="1">Claro</option>
+                                            <option value="2">Medio</option>
+                                            <option value="3">Oscuro</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Proceso de Café</label>
+                                        <select @bind="productFormProceso" class="form-control-admin">
+                                            <option value="1">Lavado</option>
+                                            <option value="2">Natural</option>
+                                            <option value="3">Honey</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label>Precio Unitario (COP)</label>
+                                        <input type="number" @bind="productFormPrecio" class="form-control-admin" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Stock Disponible</label>
+                                        <input type="number" min="0" @bind="productFormStock" class="form-control-admin" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Descripción del Producto</label>
+                                    <textarea @bind="productFormDescripcion" placeholder="Escribe una breve descripción del café..."
+                                              rows="3" class="form-control-admin" style="resize: vertical;"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Imagen del Empaque (Archivo Físico)</label>
+                                    <InputFile OnChange="HandleFileSelected" class="form-control-file" />
+                                    @if (isEditingProduct && !string.IsNullOrEmpty(editingProductImageUrl))
+                                    {
+                                        <span class="file-help">Actualmente tiene: <strong>@editingProductImageUrl</strong> (déjalo vacío si
+                                            no deseas cambiarla).</span>
+                                        }
+                                    </div>
+
+                                    <!-- Notes selection Many-To-Many -->
+                                    <div class="form-group">
+                                        <label>Notas de Sabor Seleccionadas</label>
+                                        <div class="notes-selection-grid">
+                                            @foreach (var n in availableNotes)
+                                            {
+                                                <label class="checkbox-note-container">
+                                                    <input type="checkbox" checked="@productFormSelectedNoteIds.Contains(n.Id)"
+                                                           @onchange='() => ToggleFormNoteSelection(n.Id)' />
+                                                    <span class="note-label">@n.Nombre</span>
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn-cancel" @onclick="CloseProductModal">CANCELAR</button>
+                                    <button class="btn-save" @onclick="SaveProduct" type="button">GUARDAR PRODUCTO</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (showOrderDetailsModal && selectedOrderForView != null)
+                    {
+                        <div class="modal-backdrop">
+                            <div class="modal-box" style="max-width: 650px;">
+                                <div class="modal-header">
+                                    <h3>Detalles del Pedido: @selectedOrderForView.Codigo</h3>
+                                    <button class="btn-close-modal" @onclick="CloseOrderDetailsModal">×</button>
+                                </div>
+                                <div class="modal-body">
+                                    <div
+                                        style="margin-bottom: 15px; font-size: 0.88rem; background: #FAF6F0; padding: 12px; border-radius: 8px;">
+                                        <div><strong>ID Pedido:</strong> #@selectedOrderForView.Id</div>
+                                        <div><strong>Cliente:</strong> @selectedOrderForView.NombreUsuario
+                                            (@selectedOrderForView.EmailCliente)</div>
+                                            <div><strong>Dirección de Entrega:</strong> @(string.IsNullOrEmpty(selectedOrderForView.Direccion) ?
+                                                        "Dirección registrada" : selectedOrderForView.Direccion)</div>
+                                                <div><strong>Fecha:</strong> @selectedOrderForView.Fecha.ToLocalTime().ToString("g")</div>
+                                                <div><strong>Estado de Pago:</strong> @selectedOrderForView.EstadoPago</div>
+                                                <div><strong>Total:</strong> $@selectedOrderForView.Total.ToString("N0") COP</div>
+                                            </div>
+
+                                            <h4 style="margin-bottom: 10px; font-size: 0.95rem; font-family: 'Playfair Display', serif;">Productos
+                                                Comprados (detallesAdmin)</h4>
+                                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                                    @foreach (var d in selectedOrderForView.Detalles)
+                                                    {
+                                                        <div
+                                                            style="display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid #E5E2DC; border-radius: 8px; background: #FFFFFF;">
+                                                            <img src="@ApiService.GetFullImageUrl(d.ImagenProducto)" alt="@d.NombreProducto"
+                                                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #E5E2DC;" />
+                                                            <div style="flex: 1;">
+                                                                <div style="font-weight: 700; font-size: 0.9rem;">@d.NombreProducto</div>
+                                                                <div style="font-size: 0.78rem; color: #706B64;">ID Producto: #@d.IdProducto | Cantidad:
+                                                                    @d.Cantidad | Unitario: $@d.PrecioUnitario.ToString("N0") COP</div>
+                                                                </div>
+                                                                <div style="font-weight: 800; font-size: 0.95rem; color: #1A100A;">
+                                                                    $@(d.SubTotal > 0 ? d.SubTotal.ToString("N0") : (d.Cantidad *
+                                                                                                d.PrecioUnitario).ToString("N0")) COP
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn-cancel" @onclick="CloseOrderDetailsModal">CERRAR</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+
+@code {
+    private Order? selectedOrderForView = null;
+    private bool showOrderDetailsModal = false;
+
+    private void ViewOrderDetails(Order o)
+    {
+        selectedOrderForView = o;
+        showOrderDetailsModal = true;
+    }
+
+    private void CloseOrderDetailsModal()
+    {
+        showOrderDetailsModal = false;
+        selectedOrderForView = null;
+    }
+
+    private string activeTab = "productos";
+
+    // Authentication States
+    private string loginEmail = "";
+    private string loginPassword = "";
+    private string loginErrorMessage = "";
+
+    // Entities lists
+    private List<Product> products = new();
+    private List<Category> categories = new();
+    private List<Order> orders = new();
+    private List<User> users = new();
+    private List<Note> availableNotes = new();
+
+    // --- PAGINATION STATE ---
+    private int pageSizeProducts = 10;
+    private int currentPageProducts = 1;
+
+    private int pageSizeCategories = 10;
+    private int currentPageCategories = 1;
+
+    private int pageSizeOrders = 10;
+    private int currentPageOrders = 1;
+
+    private int pageSizeUsers = 10;
+    private int currentPageUsers = 1;
+
+    // --- COMPUTED PAGINATED LISTS ---
+    private IEnumerable<Product> PaginatedProducts =>
+        products.Skip((currentPageProducts - 1) * pageSizeProducts).Take(pageSizeProducts);
+    private int TotalPagesProducts => (int)Math.Ceiling((double)Math.Max(1, products.Count) / pageSizeProducts);
+    private int StartItemProducts => products.Any() ? ((currentPageProducts - 1) * pageSizeProducts) + 1 : 0;
+    private int EndItemProducts => Math.Min(currentPageProducts * pageSizeProducts, products.Count);
+
+    private void GoToPageProducts(int page)
+    {
+        currentPageProducts = Math.Clamp(page, 1, TotalPagesProducts);
+    }
+    private void OnPageSizeProductsChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            pageSizeProducts = val;
+            currentPageProducts = 1;
+        }
+    }
+
+    private IEnumerable<Category> PaginatedCategories =>
+        categories.Skip((currentPageCategories - 1) * pageSizeCategories).Take(pageSizeCategories);
+    private int TotalPagesCategories => (int)Math.Ceiling((double)Math.Max(1, categories.Count) / pageSizeCategories);
+    private int StartItemCategories => categories.Any() ? ((currentPageCategories - 1) * pageSizeCategories) + 1 : 0;
+    private int EndItemCategories => Math.Min(currentPageCategories * pageSizeCategories, categories.Count);
+
+    private void GoToPageCategories(int page)
+    {
+        currentPageCategories = Math.Clamp(page, 1, TotalPagesCategories);
+    }
+    private void OnPageSizeCategoriesChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            pageSizeCategories = val;
+            currentPageCategories = 1;
+        }
+    }
+
+    // --- SEARCH AND FILTER STATE ---
+    private string searchOrdersQuery = "";
+    private string filterOrderStatus = "Todos";
+
+    private string searchUsersQuery = "";
+    private string filterUserRole = "Todos";
+
+    // --- COMPUTED FILTERED AND PAGINATED LISTS ---
+    private List<Order> FilteredOrders
+    {
+        get
+        {
+            var query = orders.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(searchOrdersQuery))
+            {
+                var q = searchOrdersQuery.Trim();
+                query = query.Where(o =>
+                    o.Codigo.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    o.NombreUsuario.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    o.EmailCliente.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    o.Direccion.Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(filterOrderStatus) && filterOrderStatus != "Todos")
+            {
+                query = query.Where(o => o.Estado.Equals(filterOrderStatus, StringComparison.OrdinalIgnoreCase));
+            }
+            return query.ToList();
+        }
+    }
+
+    private IEnumerable<Order> PaginatedOrders =>
+        FilteredOrders.Skip((currentPageOrders - 1) * pageSizeOrders).Take(pageSizeOrders);
+    private int TotalPagesOrders => (int)Math.Ceiling((double)Math.Max(1, FilteredOrders.Count) / pageSizeOrders);
+    private int StartItemOrders => FilteredOrders.Any() ? ((currentPageOrders - 1) * pageSizeOrders) + 1 : 0;
+    private int EndItemOrders => Math.Min(currentPageOrders * pageSizeOrders, FilteredOrders.Count);
+
+    private void GoToPageOrders(int page)
+    {
+        currentPageOrders = Math.Clamp(page, 1, TotalPagesOrders);
+    }
+    private void OnPageSizeOrdersChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            pageSizeOrders = val;
+            currentPageOrders = 1;
+        }
+    }
+
+    private List<User> FilteredUsers
+    {
+        get
+        {
+            var query = users.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(searchUsersQuery))
+            {
+                var q = searchUsersQuery.Trim();
+                query = query.Where(u =>
+                    u.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    u.Email.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    u.Rol.Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(filterUserRole) && filterUserRole != "Todos")
+            {
+                query = query.Where(u => u.Rol.Equals(filterUserRole, StringComparison.OrdinalIgnoreCase));
+            }
+            return query.ToList();
+        }
+    }
+
+    private IEnumerable<User> PaginatedUsers =>
+        FilteredUsers.Skip((currentPageUsers - 1) * pageSizeUsers).Take(pageSizeUsers);
+    private int TotalPagesUsers => (int)Math.Ceiling((double)Math.Max(1, FilteredUsers.Count) / pageSizeUsers);
+    private int StartItemUsers => FilteredUsers.Any() ? ((currentPageUsers - 1) * pageSizeUsers) + 1 : 0;
+    private int EndItemUsers => Math.Min(currentPageUsers * pageSizeUsers, FilteredUsers.Count);
+
+    private void GoToPageUsers(int page)
+    {
+        currentPageUsers = Math.Clamp(page, 1, TotalPagesUsers);
+    }
+    private void OnPageSizeUsersChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            pageSizeUsers = val;
+            currentPageUsers = 1;
+        }
+    }
+
+    // Modals & Form variables
+    private bool showProductModal = false;
+    private bool isEditingProduct = false;
+    private string formErrorMessage = "";
+
+    private string productFormId = "";
+    private string productFormNombre = "";
+    private string productFormRegion = "Tolima, Colombia";
+    private int productFormPrecio = 35000;
+    private string productFormFormato = "Grano";
+    private string productFormPerfilSabor = "Dulce";
+    private string productFormMetodoRecomendado = "Filtrado";
+    private int productFormIntensidad = 3;
+    private string productFormEtiqueta = "";
+    private string editingProductImageUrl = "";
+
+    // New backend bindings
+    private int productFormIdCategoria = 1;
+    private int productFormTueste = 2; // Default Medio
+    private int productFormProceso = 1; // Default Lavado
+    private int productFormStock = 20;
+    private string productFormDescripcion = "";
+
+    private List<int> productFormSelectedNoteIds = new();
+    private Microsoft.AspNetCore.Components.Forms.IBrowserFile? selectedImageFile;
+
+    // Categories Inline edit
+    private string newCategoryName = "";
+    private int editingCategoryId = 0;
+    private string editingCategoryName = "";
+
+    // Notes Inline edit & creation
+    private string newNoteName = "";
+    private int editingNoteId = 0;
+    private string editingNoteName = "";
+    private string noteActionMessage = "";
+
+    private async Task CreateNote()
+    {
+        if (string.IsNullOrWhiteSpace(newNoteName)) return;
+        noteActionMessage = "";
+        bool ok = await ApiService.CrearNotaAsync(newNoteName.Trim());
+        if (ok)
+        {
+            newNoteName = "";
+            availableNotes = await ApiService.GetNotasAsync();
+            noteActionMessage = "¡Nota de sabor guardada exitosamente en la Base de Datos!";
+        }
+    }
+
+    private void StartNoteEdit(Note n)
+    {
+        editingNoteId = n.Id;
+        editingNoteName = n.Nombre;
+    }
+
+    private void CancelNoteEdit()
+    {
+        editingNoteId = 0;
+        editingNoteName = "";
+    }
+
+    private async Task SaveNoteEdit(Note n)
+    {
+        if (string.IsNullOrWhiteSpace(editingNoteName)) return;
+        noteActionMessage = "";
+        bool ok = await ApiService.ActualizarNotaAsync(n.Id, editingNoteName.Trim());
+        if (ok)
+        {
+            editingNoteId = 0;
+            editingNoteName = "";
+            availableNotes = await ApiService.GetNotasAsync();
+            noteActionMessage = "¡Nota de sabor actualizada exitosamente en la Base de Datos!";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ApiService.IsLoggedIn)
+        {
+            await LoadActiveTabData();
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        loginErrorMessage = "";
+        if (string.IsNullOrEmpty(loginEmail) || string.IsNullOrEmpty(loginPassword))
+        {
+            loginErrorMessage = "Por favor ingresa todos los campos.";
+            return;
+        }
+
+        var success = await ApiService.LoginAsync(loginEmail, loginPassword);
+        if (success)
+        {
+            if (ApiService.IsAdmin)
+            {
+                await LoadActiveTabData();
+            }
+            else
+            {
+                ApiService.Logout();
+                loginErrorMessage = "Acceso denegado. Tu cuenta no tiene permisos de administrador.";
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(ApiService.LastLoginError) && ApiService.LastLoginError.Contains("no ha sido activada"))
+            {
+                loginErrorMessage = "Tu cuenta aún no ha sido activada en la Base de Datos de Azure. Por favor ingresa el código de activación desde la pantalla de Verificación.";
+            }
+            else
+            {
+                loginErrorMessage = !string.IsNullOrEmpty(ApiService.LastLoginError)
+                    ? ApiService.LastLoginError
+                    : "Credenciales incorrectas o usuario inactivo.";
+            }
+        }
+    }
+
+    private void HandleLogout()
+    {
+        ApiService.Logout();
+        NavigationManager.NavigateTo("admin", forceLoad: true);
+    }
+
+    private async Task SetActiveTab(string tabName)
+    {
+        activeTab = tabName;
+        await LoadActiveTabData();
+    }
+
+    private async Task LoadActiveTabData()
+    {
+        try
+        {
+            if (activeTab == "productos")
+            {
+                var taskProds = ApiService.GetTodosProductosAsync();
+                var taskNotes = ApiService.GetNotasAsync();
+                var taskCats = ApiService.GetTodasCategoriasAsync();
+
+                await Task.WhenAll(taskProds, taskNotes, taskCats);
+
+                products = await taskProds;
+                availableNotes = await taskNotes;
+                var rawCats = await taskCats;
+                categories = rawCats.GroupBy(c => c.Id).Select(g => g.First()).ToList();
+            }
+            else if (activeTab == "categorias")
+            {
+                var rawCats = await ApiService.GetTodasCategoriasAsync();
+                categories = rawCats.GroupBy(c => c.Id).Select(g => g.First()).ToList();
+            }
+            else if (activeTab == "pedidos")
+            {
+                orders = await ApiService.GetTodosPedidosAsync();
+            }
+            else if (activeTab == "usuarios")
+            {
+                users = await ApiService.GetUsuariosAsync();
+            }
+            else if (activeTab == "notas")
+            {
+                availableNotes = await ApiService.GetNotasAsync();
+            }
+            
+
+            
+
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando datos: {ex.Message}");
+        }
+    }
+
+    // --- PRODUCTS OPERATIONS ---
+    private async Task OpenCreateProductModal()
+    {
+        isEditingProduct = false;
+        formErrorMessage = "";
+        productFormId = "";
+        productFormNombre = "";
+        productFormRegion = "Tolima, Colombia";
+        productFormPrecio = 35000;
+        productFormFormato = "Grano";
+        productFormPerfilSabor = "Dulce";
+        productFormMetodoRecomendado = "Filtrado";
+        productFormIntensidad = 3;
+        productFormEtiqueta = "";
+
+        availableNotes = await ApiService.GetNotasAsync();
+
+        productFormIdCategoria = categories.FirstOrDefault()?.Id ?? 1;
+        productFormTueste = 2;
+        productFormProceso = 1;
+        productFormStock = 20;
+        productFormDescripcion = "";
+
+        productFormSelectedNoteIds.Clear();
+        selectedImageFile = null;
+        showProductModal = true;
+    }
+
+    private async Task OpenEditProductModal(Product p)
+    {
+        isEditingProduct = true;
+        formErrorMessage = "";
+        productFormId = p.Id;
+        productFormNombre = p.Nombre;
+        productFormRegion = p.Region;
+        productFormPrecio = (int)p.Precio;
+        productFormFormato = p.Formato;
+        productFormPerfilSabor = p.PerfilSabor;
+        productFormMetodoRecomendado = p.MetodoRecomendado;
+        productFormIntensidad = p.Intensidad;
+        productFormEtiqueta = p.Etiqueta;
+        editingProductImageUrl = p.ImagenUrl;
+
+        availableNotes = await ApiService.GetNotasAsync();
+
+        productFormIdCategoria = (p.IdCategoria > 0 && categories.Any(c => c.Id == p.IdCategoria))
+                    ? p.IdCategoria
+                    : (categories.FirstOrDefault(c => c.Nombre.Equals(p.Formato, StringComparison.OrdinalIgnoreCase))?.Id ??
+        (categories.FirstOrDefault()?.Id ?? 1));
+
+        productFormTueste = p.Tueste == "Claro" ? 1 : p.Tueste == "Oscuro" ? 3 : 2;
+        productFormProceso = p.Proceso == "Natural" ? 2 : p.Proceso == "Honey" ? 3 : 1;
+        productFormStock = p.Stock;
+        productFormDescripcion = p.Descripcion ?? "";
+
+        productFormSelectedNoteIds = new List<int>();
+        if (p.Notas != null && p.Notas.Any())
+        {
+            foreach (var note in p.Notas)
+            {
+                int matchedId = note.Id;
+                if (matchedId <= 0 && !string.IsNullOrWhiteSpace(note.Nombre))
+                {
+                    var found = availableNotes.FirstOrDefault(an => an.Nombre.Trim().Equals(note.Nombre.Trim(), StringComparison.OrdinalIgnoreCase));
+                    if (found != null) matchedId = found.Id;
+                }
+                if (matchedId > 0 && !productFormSelectedNoteIds.Contains(matchedId))
+                {
+                    productFormSelectedNoteIds.Add(matchedId);
+                }
+            }
+        }
+
+        selectedImageFile = null;
+        showProductModal = true;
+    }
+
+    private void CloseProductModal()
+    {
+        showProductModal = false;
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedImageFile = e.File;
+    }
+
+    private void ToggleFormNoteSelection(int noteId)
+    {
+        if (noteId <= 0) return;
+        if (productFormSelectedNoteIds.Contains(noteId))
+            productFormSelectedNoteIds.Remove(noteId);
+        else
+            productFormSelectedNoteIds.Add(noteId);
+    }
+
+    private async Task SaveProduct()
+    {
+        formErrorMessage = "";
+        if (string.IsNullOrEmpty(productFormNombre))
+        {
+            formErrorMessage = "Por favor, completa los campos requeridos (Nombre).";
+            return;
+        }
+
+        if (!isEditingProduct && selectedImageFile == null)
+        {
+            formErrorMessage = "La imagen es obligatoria al crear un nuevo producto.";
+            return;
+        }
+
+        int targetCatId = productFormIdCategoria;
+        if (!categories.Any(c => c.Id == targetCatId))
+        {
+            var matchedCat = categories.FirstOrDefault(c => c.Nombre.Equals(productFormFormato,
+StringComparison.OrdinalIgnoreCase));
+            targetCatId = matchedCat?.Id ?? (categories.FirstOrDefault()?.Id ?? 1);
+        }
+
+        string descToSend = string.IsNullOrWhiteSpace(productFormDescripcion)
+            ? "Café de especialidad Waylan Origin con perfil de notas seleccionadas."
+            : productFormDescripcion;
+
+        var content = new MultipartFormDataContent();
+        content.Add(new StringContent(productFormNombre), "Nombre");
+        content.Add(new StringContent(targetCatId.ToString()), "IdCategoria");
+        content.Add(new StringContent(productFormTueste.ToString()), "tueste");
+        content.Add(new StringContent(productFormTueste.ToString()), "Tueste");
+        content.Add(new StringContent(productFormProceso.ToString()), "proceso");
+        content.Add(new StringContent(productFormProceso.ToString()), "Proceso");
+        content.Add(new StringContent(descToSend), "Descripcion");
+        content.Add(new StringContent(productFormPrecio.ToString()), "Precio");
+        content.Add(new StringContent(productFormStock.ToString()), "Stock");
+
+        if (selectedImageFile != null)
+        {
+            using var ms = new MemoryStream();
+            await selectedImageFile.OpenReadStream(maxAllowedSize: 15 * 1024 * 1024).CopyToAsync(ms);
+            byte[] fileBytes = ms.ToArray();
+            string imageBase64 = $"data:{selectedImageFile.ContentType};base64,{Convert.ToBase64String(fileBytes)}";
+            content.Add(new StringContent(imageBase64), "ImagenBase64");
+
+            var fileContent = new ByteArrayContent(fileBytes);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedImageFile.ContentType);
+            content.Add(fileContent, "Imagen", selectedImageFile.Name);
+        }
+
+        var validNoteIds = productFormSelectedNoteIds.Where(id => id > 0).Distinct().ToList();
+        if (validNoteIds.Any())
+        {
+            foreach (var nid in validNoteIds)
+            {
+                content.Add(new StringContent(nid.ToString()), "IdNotas");
+            }
+        }
+        else
+        {
+            int defaultNoteId = availableNotes.FirstOrDefault(n => n.Id > 0)?.Id ?? 1;
+            content.Add(new StringContent(defaultNoteId.ToString()), "IdNotas");
+        }
+
+        bool success;
+        if (isEditingProduct)
+        {
+           
+            success = await ApiService.ActualizarProductoAsync(productFormId, content);
+        }
+        else
+        {
+            success = await ApiService.CrearProductoAsync(content);
+        }
+
+        if (success)
+        {
+            showProductModal = false;
+            await LoadActiveTabData();
+        }
+        else
+        {
+            formErrorMessage = "Ocurrió un error en el servidor al guardar el producto. Inténtalo de nuevo.";
+        }
+    }
+
+    private async Task ToggleProductStatus(Product p)
+    {
+        bool nextState = !p.Activo;
+        p.Activo = nextState;
+        StateHasChanged();
+        await ApiService.CambiarEstadoProductoAsync(p.Id, nextState);
+        await LoadActiveTabData();
+        StateHasChanged();
+    }
+
+    // --- CATEGORIES OPERATIONS ---
+    private async Task CreateCategory()
+    {
+        if (string.IsNullOrEmpty(newCategoryName)) return;
+        var success = await ApiService.CrearCategoriaAsync(newCategoryName);
+        if (success)
+        {
+            newCategoryName = "";
+            await LoadActiveTabData();
+        }
+    }
+
+    private void StartCategoryEdit(Category c)
+    {
+        editingCategoryId = c.Id;
+        editingCategoryName = c.Nombre;
+    }
+
+    private void CancelCategoryEdit()
+    {
+        editingCategoryId = 0;
+        editingCategoryName = "";
+    }
+
+    private async Task SaveCategoryEdit(Category c)
+    {
+        if (string.IsNullOrEmpty(editingCategoryName)) return;
+        var success = await ApiService.ActualizarCategoriaAsync(c.Id, editingCategoryName);
+        if (success)
+        {
+            editingCategoryId = 0;
+            editingCategoryName = "";
+            await LoadActiveTabData();
+        }
+    }
+
+    private async Task ToggleCategoryStatus(Category c)
+    {
+        bool nextState = !c.Activo;
+        c.Activo = nextState;
+        StateHasChanged();
+        await ApiService.CambiarEstadoCategoriaAsync(c.Id, nextState);
+        await LoadActiveTabData();
+        StateHasChanged();
+    }
+
+    // --- ORDERS OPERATIONS ---
+    private Dictionary<string, string> pendingOrderStateChanges = new();
+    private string orderStatusSuccessMessage = "";
+
+    private string GetOrderStateBadgeClass(string state)
+    {
+        var s = (state ?? "").ToLowerInvariant().Replace(" ", "").Replace("á", "a").Replace("ó", "o");
+        if (s.Contains("pendiente")) return "state-badge-pendiente";
+        if (s.Contains("preparac")) return "state-badge-preparacion";
+        if (s.Contains("transit") || s.Contains("reparto")) return "state-badge-transito";
+        if (s.Contains("entregad") || s.Contains("completad")) return "state-badge-entregado";
+        if (s.Contains("cancelad")) return "state-badge-cancelado";
+        return "state-badge-pendiente";
+    }
+
+    private void OnOrderStateSelected(string codigo, string newState)
+    {
+        orderStatusSuccessMessage = "";
+        pendingOrderStateChanges[codigo] = newState;
+    }
+
+    private async Task SaveSingleOrderState(string codigo)
+    {
+        if (pendingOrderStateChanges.TryGetValue(codigo, out var newState))
+        {
+            var success = await ApiService.CambiarEstadoPedidoAsync(codigo, newState);
+            if (success)
+            {
+                pendingOrderStateChanges.Remove(codigo);
+                orderStatusSuccessMessage = $"¡Estado del pedido {codigo} actualizado a '{newState}' exitosamente!";
+                await LoadActiveTabData();
+            }
+        }
+    }
+
+    private async Task SavePendingOrderStateChanges()
+    {
+        if (!pendingOrderStateChanges.Any()) return;
+        int count = 0;
+        foreach (var kvp in pendingOrderStateChanges.ToList())
+        {
+            var success = await ApiService.CambiarEstadoPedidoAsync(kvp.Key, kvp.Value);
+            if (success)
+            {
+                pendingOrderStateChanges.Remove(kvp.Key);
+                count++;
+            }
+        }
+        orderStatusSuccessMessage = $"¡Se actualizaron {count} pedido(s) exitosamente!";
+        await LoadActiveTabData();
+    }
+
+    // --- USERS OPERATIONS ---
+    private async Task ToggleUserStatus(User u)
+    {
+        bool nextState = !u.Activo;
+        u.Activo = nextState;
+        StateHasChanged();
+        await ApiService.CambiarEstadoUsuarioAsync(u.Id, nextState, u.Email);
+        await LoadActiveTabData();
+        StateHasChanged();
+    }
+}
+
+<!-- GLASSMORPHIC LUXURY ADMIN STYLES -->
+<style>
+    .admin-dashboard-page {
+        --admin-brown: #1A100A;
+        --admin-dark-card: #281A12;
+        --admin-gold: #B89A5E;
+        --admin-gold-hover: #D1B894;
+        --admin-cream: #FAF6F0;
+        --admin-red: #8C2424;
+        --admin-red-hover: #A83636;
+        --admin-white: #FFFFFF;
+
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        background-color: var(--admin-cream);
+        color: var(--admin-brown);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* HEADER */
+    .admin-header {
+        background-color: var(--admin-brown);
+        border-bottom: 2.5px solid var(--admin-gold);
+        padding: 18px 40px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .admin-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .admin-logo {
+        height: 38px;
+        vertical-align: middle;
+        margin-right: 15px;
+    }
+
+    .admin-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: var(--admin-gold);
+        border: 1px solid var(--admin-gold);
+        padding: 4px 10px;
+        border-radius: 4px;
+    }
+
+    .user-info-bar {
+        color: var(--admin-white);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .btn-logout {
+        background: transparent;
+        border: 1px solid var(--admin-gold);
+        color: var(--admin-gold);
+        padding: 6px 14px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .btn-logout:hover {
+        background-color: var(--admin-gold);
+        color: var(--admin-brown);
+    }
+
+    /* LOGIN & UNAUTHORIZED BOXES */
+    .admin-login-box,
+    .unauthorized-box {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M0,50 Q25,25 50,50 T100,50' fill='none' stroke='%23B89A5E' stroke-opacity='0.05'/%3E%3C/svg%3E");
+    }
+
+    .login-card,
+    .unauthorized-card {
+        background-color: var(--admin-white);
+        border: 1px solid rgba(40, 26, 18, 0.12);
+        padding: 45px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 440px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+    }
+
+    .login-card h2,
+    .unauthorized-card h2 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.6rem;
+        margin: 0 0 10px 0;
+        color: var(--admin-brown);
+    }
+
+    .login-card p,
+    .unauthorized-card p {
+        font-size: 0.85rem;
+        color: #706B64;
+        margin: 0 0 30px 0;
+        line-height: 1.5;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--admin-brown);
+        letter-spacing: 0.5px;
+    }
+
+    .form-control-admin {
+        width: 100%;
+        padding: 11px 15px;
+        font-size: 0.85rem;
+        border: 1px solid #D2CFC9;
+        border-radius: 5px;
+        background-color: var(--admin-cream);
+        color: var(--admin-brown);
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .form-control-admin:focus {
+        border-color: var(--admin-gold);
+    }
+
+    .btn-admin-submit {
+        width: 100%;
+        background-color: var(--admin-brown);
+        color: var(--admin-white) !important;
+        border: none;
+        padding: 13px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-top: 10px;
+        outline: none;
+    }
+
+    .btn-admin-submit:hover {
+        background-color: #2F1E14;
+    }
+
+    .error-alert {
+        background-color: #FCE8E6;
+        color: var(--admin-red);
+        border-left: 4px solid var(--admin-red);
+        padding: 12px 16px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+    }
+
+    /* DASHBOARD BODY */
+    .dashboard-body {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        max-width: 1400px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 30px 20px;
+        gap: 24px;
+        box-sizing: border-box;
+    }
+
+    @@media (max-width: 1100px) {
+        .dashboard-body {
+            grid-template-columns: 220px 1fr;
+            padding: 20px 14px;
+            gap: 16px;
+        }
+        .dashboard-content-panel {
+            padding: 20px 16px;
+        }
+    }
+
+    @@media (max-width: 900px) {
+        .dashboard-body {
+            grid-template-columns: 1fr;
+            padding: 16px 10px;
+            gap: 16px;
+        }
+
+        .dashboard-sidebar {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 8px;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .sidebar-tab-btn {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+        }
+
+        .dashboard-content-panel {
+            padding: 16px 12px;
+            min-height: auto;
+            box-sizing: border-box;
+            width: 100%;
+            overflow: hidden;
+        }
+    }
+
+    /* SIDEBAR */
+    .dashboard-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sidebar-tab-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        color: #706B64;
+        text-align: left;
+        padding: 14px 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .sidebar-tab-btn .icon {
+        width: 18px;
+        height: 18px;
+        color: #706B64;
+        transition: color 0.2s;
+    }
+
+    .sidebar-tab-btn:hover {
+        background-color: rgba(184, 154, 94, 0.1);
+        color: var(--admin-brown);
+    }
+
+    .sidebar-tab-btn.active {
+        background-color: var(--admin-brown);
+        color: var(--admin-gold);
+    }
+
+    .sidebar-tab-btn.active .icon {
+        color: var(--admin-gold);
+    }
+
+    /* CONTENT DISPLAY PANEL */
+    .dashboard-content-panel {
+        background-color: var(--admin-white);
+        border: 1px solid rgba(40, 26, 18, 0.1);
+        border-radius: 8px;
+        padding: 35px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        min-height: 500px;
+    }
+
+    .panel-section h2 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.5rem;
+        margin: 0 0 25px 0;
+        color: var(--admin-brown);
+    }
+
+    .panel-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .panel-header-row h2 {
+        margin: 0;
+    }
+
+    /* BUTTONS */
+    .btn-create-new {
+        background-color: var(--admin-gold);
+        color: var(--admin-brown);
+        border: none;
+        padding: 10px 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        outline: none;
+    }
+
+    .btn-create-new:hover {
+        background-color: var(--admin-gold-hover);
+    }
+
+    /* TABLES RESPONSIVE */
+    .table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid rgba(40, 26, 18, 0.08);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .table-container::-webkit-scrollbar {
+        height: 8px;
+    }
+    .table-container::-webkit-scrollbar-track {
+        background: #FAF6F0;
+        border-radius: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+        background: #D1B894;
+        border-radius: 4px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #B89A5E;
+    }
+
+    .admin-table {
+        width: 100%;
+        min-width: 950px;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.84rem;
+    }
+
+    .admin-table th {
+        background-color: #FAF6F0;
+        color: #706B64;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.8px;
+        padding: 12px 14px;
+        border-bottom: 1.5px solid var(--admin-gold);
+        white-space: nowrap;
+    }
+
+    .admin-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #FAF6F0;
+        color: var(--admin-brown);
+        vertical-align: middle;
+    }
+
+    .admin-table tr:hover td {
+        background-color: #FCFBF9;
+    }
+
+    /* PRODUCT THUMBNAIL & DTO BADGES */
+    .admin-prod-img {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid rgba(184, 154, 94, 0.3);
+        background-color: #FAF6F0;
+    }
+
+    .badge-tueste,
+    .badge-proceso {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background-color: #FAF6F0;
+        color: var(--admin-brown);
+        border: 1px solid rgba(40, 26, 18, 0.15);
+        display: inline-block;
+    }
+
+    /* STOCK ALERT BANNER & HIGHLIGHTS */
+    .stock-warning-banner {
+        background-color: #FEF2F2;
+        border: 1.5px solid #FCA5A5;
+        border-left: 6px solid #DC2626;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);
+    }
+
+    .stock-banner-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.88rem;
+        color: #7F1D1D;
+    }
+
+    .stock-banner-pills {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .stock-pill-badge {
+        font-size: 0.76rem;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 12px;
+    }
+
+    .stock-pill-badge.out-of-stock-pill {
+        background-color: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #EF4444;
+    }
+
+    .stock-pill-badge.low-stock-pill {
+        background-color: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #F59E0B;
+    }
+
+    .admin-table tr.row-out-of-stock td {
+        background-color: #FEF2F2 !important;
+    }
+
+    .admin-table tr.row-out-of-stock {
+        border-left: 4px solid #DC2626 !important;
+    }
+
+    .admin-table tr.row-low-stock td {
+        background-color: #FFFBEB !important;
+    }
+
+    .admin-table tr.row-low-stock {
+        border-left: 4px solid #F59E0B !important;
+    }
+
+    .stock-badge {
+        font-size: 0.76rem;
+        font-weight: 800;
+        padding: 4px 10px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+    .stock-badge.in-stock {
+        background-color: #DCFCE7;
+        color: #15803D;
+        border: 1px solid #22C55E;
+    }
+
+    .stock-badge.low-stock-soft {
+        background-color: #FEF9C3;
+        color: #713F12;
+        border: 1px solid #EAB308;
+    }
+
+    .stock-badge.low-stock {
+        background-color: #FEF3C7;
+        color: #92400E;
+        border: 1.5px solid #F59E0B;
+    }
+
+    .stock-badge.out-of-stock {
+        background-color: #FEE2E2;
+        color: #991B1B;
+        border: 1.5px solid #EF4444;
+        animation: pulse-red 2s infinite;
+    }
+
+    @@keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .notes-pill-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        max-width: 180px;
+    }
+
+    .note-pill {
+        font-size: 0.65rem;
+        font-weight: 700;
+        background-color: rgba(184, 154, 94, 0.15);
+        color: var(--admin-brown);
+        padding: 2px 6px;
+        border-radius: 10px;
+    }
+
+    /* BADGES */
+    .status-badge {
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .status-badge.active {
+        background-color: #E2F3E7;
+        color: #2F6F4C;
+    }
+
+    .status-badge.inactive {
+        background-color: #FCE8E6;
+        color: var(--admin-red);
+    }
+
+    .status-badge.pending {
+        background-color: #FEF3D6;
+        color: #C47A2B;
+    }
+
+    .role-badge {
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+
+    .role-badge.admin {
+        background-color: #ECE7FF;
+        color: #5848C2;
+    }
+
+    .role-badge.client {
+        background-color: #E2F0FE;
+        color: #1F69C2;
+    }
+
+    /* TABLE ACTIONS BUTTONS */
+    .btn-action-edit,
+    .btn-action-save {
+        background: transparent;
+        border: none;
+        color: var(--admin-gold);
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 0;
+        margin-right: 12px;
+        outline: none;
+    }
+
+    .btn-action-edit:hover,
+    .btn-action-save:hover {
+        color: var(--admin-gold-hover);
+        text-decoration: underline;
+    }
+
+    .btn-action-status,
+    .btn-action-cancel {
+        background: transparent;
+        border: none;
+        color: var(--admin-red);
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 0;
+        outline: none;
+    }
+
+    .btn-action-status:hover,
+    .btn-action-cancel:hover {
+        color: var(--admin-red-hover);
+        text-decoration: underline;
+    }
+
+    /* INLINE EDIT */
+    .add-category-inline {
+        display: flex;
+        gap: 10px;
+    }
+
+    .form-control-inline {
+        padding: 9px 12px;
+        font-size: 0.8rem;
+        border: 1px solid #D2CFC9;
+        border-radius: 4px;
+        outline: none;
+        width: 180px;
+    }
+
+    .form-control-table {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        border: 1px solid #D2CFC9;
+        border-radius: 4px;
+        outline: none;
+        width: 150px;
+    }
+
+    .admin-table td.address-cell {
+        min-width: 210px;
+        max-width: 320px;
+        padding: 8px 10px;
+    }
+
+    .address-card-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        background: #FAF6F0;
+        border: 1px solid #E5E2DC;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #1A100A;
+        line-height: 1.45;
+        word-break: break-word;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .address-card-box .address-icon {
+        flex-shrink: 0;
+        color: #B89A5E;
+        margin-top: 3px;
+    }
+
+    .select-order-state {
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        border-radius: 20px;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .select-order-state.state-badge-pendiente {
+        background-color: #FEF3C7;
+        color: #92400E;
+        border: 1.5px solid #F59E0B;
+    }
+
+    .select-order-state.state-badge-preparacion {
+        background-color: #E0F2FE;
+        color: #1E40AF;
+        border: 1.5px solid #3B82F6;
+    }
+
+    .select-order-state.state-badge-transito {
+        background-color: #F3E8FF;
+        color: #6B21A8;
+        border: 1.5px solid #8B5CF6;
+    }
+
+    .select-order-state.state-badge-entregado {
+        background-color: #DCFCE7;
+        color: #15803D;
+        border: 1.5px solid #10B981;
+    }
+
+    .select-order-state.state-badge-cancelado {
+        background-color: #FEE2E2;
+        color: #B91C1C;
+        border: 1.5px solid #EF4444;
+    }
+
+    .self-label {
+        font-size: 0.75rem;
+        color: #706B64;
+        font-style: italic;
+    }
+
+    /* POPUP MODAL */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(26, 16, 10, 0.45);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+
+    .modal-box {
+        background-color: var(--admin-white);
+        border-radius: 10px;
+        width: 100%;
+        max-width: 650px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+        border: 1px solid rgba(40, 26, 18, 0.15);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        border-bottom: 1px solid rgba(40, 26, 18, 0.08);
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 1.35rem;
+    }
+
+    .btn-close-modal {
+        background: transparent;
+        border: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #706B64;
+        outline: none;
+        line-height: 1;
+    }
+
+    .modal-body {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    @@media (max-width: 600px) {
+        .form-row-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-control-file {
+        font-size: 0.8rem;
+    }
+
+    .file-help {
+        font-size: 0.75rem;
+        color: #706B64;
+        margin-top: 4px;
+    }
+
+    /* NOTES SELECTION IN MODAL */
+    .notes-selection-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 8px;
+        border: 1px solid #D2CFC9;
+        padding: 12px;
+        border-radius: 5px;
+        background-color: var(--admin-cream);
+        max-height: 120px;
+        overflow-y: auto;
+    }
+
+    .checkbox-note-container {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .note-label {
+        font-weight: 600;
+        color: var(--admin-brown);
+    }
+
+    .modal-footer {
+        padding: 20px 30px;
+        border-top: 1px solid rgba(40, 26, 18, 0.08);
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid #D2CFC9;
+        color: #706B64;
+        padding: 10px 20px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .btn-cancel:hover {
+        background-color: var(--admin-cream);
+    }
+
+    .btn-save {
+        background-color: var(--admin-brown);
+        color: var(--admin-white) !important;
+        border: none;
+        padding: 10px 22px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        outline: none;
+    }
+
+    .btn-save:hover {
+        background-color: #2F1E14;
+    }
+
+    /* PAGINATION BAR STYLE (COPY OF THE USER'S ATTACHED SCREENSHOT) */
+    .admin-pagination-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background-color: #FAFAF9;
+        border: 1px solid #E2DBD3;
+        border-top: none;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        font-size: 0.82rem;
+        color: #55443B;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #706B64;
+    }
+
+    .pagination-info strong {
+        color: #2F190E;
+    }
+
+    .pagination-divider-v {
+        color: #D2CFC9;
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .page-size-picker {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        color: #706B64;
+    }
+
+    .select-page-size,
+    .select-page-number {
+        padding: 4px 8px;
+        font-size: 0.82rem;
+        border: 1px solid #D2CFC9;
+        border-radius: 4px;
+        background-color: #FFFFFF;
+        color: #2F190E;
+        font-weight: 700;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-page-nav {
+        background-color: #FFFFFF;
+        border: 1px solid #D2CFC9;
+        color: #2F190E;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .btn-page-nav:hover:not(:disabled) {
+        background-color: #B89A5E;
+        border-color: #B89A5E;
+        color: #FFFFFF;
+    }
+
+    .btn-page-nav:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background-color: #FAF6F0;
+    }
+
+    /* SEARCH AND FILTER BAR STYLES */
+    .admin-filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+        background-color: #FAF6F0;
+        padding: 12px 18px;
+        border-radius: 8px;
+        border: 1px solid #E2DBD3;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1;
+        min-width: 250px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: #706B64;
+        pointer-events: none;
+    }
+
+    .admin-search-input {
+        width: 100%;
+        padding: 9px 36px 9px 36px;
+        font-size: 0.85rem;
+        border: 1px solid #D2CFC9;
+        border-radius: 6px;
+        outline: none;
+        background-color: #FFFFFF;
+        color: #2F190E;
+        transition: border-color 0.2s;
+    }
+
+    .admin-search-input:focus {
+        border-color: #B89A5E;
+    }
+
+    .btn-clear-search {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 1.1rem;
+        color: #706B64;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .btn-clear-search:hover {
+        color: #1A100A;
+    }
+
+    .filter-dropdown-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #55443B;
+    }
+
+    .admin-filter-select {
+        padding: 8px 12px;
+        font-size: 0.82rem;
+        border: 1px solid #D2CFC9;
+        border-radius: 6px;
+        background-color: #FFFFFF;
+        color: #2F190E;
+        font-weight: 600;
+        outline: none;
+        cursor: pointer;
+    }
+</style>

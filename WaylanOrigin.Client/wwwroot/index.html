@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waylan Origin | Café de Especialidad Colombiano</title>
+    <base href="/" />
+
+    <!-- Primary Meta Tags -->
+    <meta name="google-site-verification" content="vB7yF9zqRwRbgTNo_roSAlTwMKEkuWnp5kFbdeH-4So" />
+    <meta name="description" content="Waylan Origin - Café de especialidad de origen 100% colombiano. Granos seleccionados artesanalmente de las mejores fincas del Tolima y Colombia. Tueste fresco y alta calidad." />
+    <meta name="keywords" content="Waylan Origin, Café de especialidad, Café colombiano, Café de origen, Tolima, Café artesanal, Comprar café Colombia" />
+    <meta name="author" content="Waylan Origin" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://waylan.co/" />
+    <meta property="og:title" content="Waylan Origin | Café de Especialidad Colombiano" />
+    <meta property="og:description" content="Waylan Origin - Café de especialidad de origen 100% colombiano. Granos seleccionados artesanalmente de las mejores fincas del Tolima." />
+    <meta property="og:image" content="https://waylan.co/logotipo/waylan.png" />
+    <meta property="og:site_name" content="Waylan Origin" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://waylan.co/" />
+    <meta name="twitter:title" content="Waylan Origin | Café de Especialidad Colombiano" />
+    <meta name="twitter:description" content="Waylan Origin - Café de especialidad de origen 100% colombiano. Granos seleccionados artesanalmente de las mejores fincas del Tolima." />
+    <meta name="twitter:image" content="https://waylan.co/logotipo/waylan.png" />
+
+    <!-- Favicons & App Icons for Google Search -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="favicon.png" />
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <!-- Schema.org Structured Data for Google Logo Snippet -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Waylan Origin",
+      "url": "https://waylan.co/",
+      "logo": "https://waylan.co/logotipo/waylan.png",
+      "description": "Waylan Origin - Café de especialidad de origen 100% colombiano. Granos seleccionados artesanalmente de las mejores fincas del Tolima y Colombia.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressRegion": "Tolima",
+        "addressCountry": "CO"
+      }
+    }
+    </script>
+
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link href="WaylanOrigin.Client.styles.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <style>
+        .waylan-preloader {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #281A12 0%, #1A100A 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #FAF6F0;
+        }
+        .preloader-content {
+            text-align: center;
+            max-width: 380px;
+            padding: 40px 20px;
+        }
+        .preloader-logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+            animation: pulseLogo 2s ease-in-out infinite alternate;
+        }
+        .preloader-brand {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #B89A5E;
+            margin: 0 0 6px 0;
+        }
+        .preloader-tagline {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #EDE4D9;
+            opacity: 0.85;
+            margin: 0 0 24px 0;
+            text-transform: uppercase;
+        }
+        .preloader-progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(184, 154, 94, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .preloader-progress-fill {
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(90deg, #B89A5E 0%, #D1B894 50%, #B89A5E 100%);
+            border-radius: 4px;
+            position: absolute;
+            left: -45%;
+            animation: loadingFill 1.6s ease-in-out infinite;
+        }
+        @keyframes pulseLogo {
+            0% { transform: scale(0.98); opacity: 0.9; }
+            100% { transform: scale(1.04); opacity: 1; filter: drop-shadow(0 12px 24px rgba(184, 154, 94, 0.35)); }
+        }
+        @keyframes loadingFill {
+            0% { left: -45%; width: 35%; }
+            50% { width: 65%; }
+            100% { left: 100%; width: 35%; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="waylan-preloader">
+            <div class="preloader-content">
+                <img src="logotipo/waylan.png" alt="Waylan Origin" class="preloader-logo" />
+                <h2 class="preloader-brand">WAYLAN ORIGIN</h2>
+                <p class="preloader-tagline">Café de Especialidad · Colombia</p>
+                <div class="preloader-progress-bar">
+                    <div class="preloader-progress-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui" style="display:none;">
+        Ha ocurrido un evento inesperado.
+        <a href="" class="reload">Recargar</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+    <script>
+        window.lastWaylanActivityTime = Date.now();
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(function(evt) {
+            window.addEventListener(evt, function() {
+                window.lastWaylanActivityTime = Date.now();
+            }, { passive: true });
+        });
+        window.getWaylanInactivitySeconds = function() {
+            return Math.floor((Date.now() - (window.lastWaylanActivityTime || Date.now())) / 1000);
+        };
+
+        // === WOMPI CONFIGURACIÓN ===
+        // Cambiar a true SOLO si en el Dashboard de Wompi la "Firma de Integridad" está ACTIVADA
+        // Si está DESACTIVADA (o no existe esa opción), dejar en false
+        window.wompiUsarFirma = false;
+        // ==============================
+
+        window.abrirWidgetWompi = function (publicKey, reference, amountInCents, redirectUrl, integrity) {
+            try {
+                // === WAYLAN WOMPI DEBUG ===
+                console.group('%c[Wompi Widget] Parámetros recibidos', 'color: #B89A5E; font-weight: bold;');
+                console.log('publicKey:     ', publicKey ? publicKey.substring(0, 20) + '...' : 'VACÍO ❌');
+                console.log('reference:     ', reference || 'VACÍO ❌');
+                console.log('amountInCents: ', amountInCents, '→ COP $' + (amountInCents / 100).toLocaleString('es-CO'));
+                console.log('redirectUrl:   ', redirectUrl || 'VACÍO ❌');
+                console.log('integrity:     ', integrity ? (integrity.substring(0, 16) + '...[' + integrity.length + ' chars]') : 'VACÍO ⚠️ (se omitirá signature)');
+                console.log('wompiUsarFirma:', window.wompiUsarFirma);
+                console.groupEnd();
+                // === FIN DEBUG ===
+
+                var config = {
+                    currency: 'COP',
+                    amountInCents: amountInCents,
+                    reference: reference,
+                    publicKey: publicKey,
+                    redirectUrl: redirectUrl
+                };
+
+                // Solo enviar signature si wompiUsarFirma=true Y hay un hash válido
+                if (window.wompiUsarFirma && integrity && typeof integrity === 'string' && integrity.trim().length === 64) {
+                    config.signature = { integrity: integrity.trim() };
+                    console.log('%c[Wompi Widget] signature.integrity configurado ✅ (firma activada)', 'color: green;');
+                } else if (window.wompiUsarFirma) {
+                    console.warn('[Wompi Widget] ⚠️ wompiUsarFirma=true pero integrity inválido, enviando sin firma');
+                } else {
+                    console.log('%c[Wompi Widget] Sin signature (wompiUsarFirma=false — firma desactivada en Dashboard)', 'color: #B89A5E;');
+                }
+
+                console.log('[Wompi Widget] Config final enviada a WidgetCheckout:', JSON.stringify({
+                    currency: config.currency,
+                    amountInCents: config.amountInCents,
+                    reference: config.reference,
+                    publicKey: config.publicKey ? config.publicKey.substring(0, 20) + '...' : null,
+                    redirectUrl: config.redirectUrl,
+                    hasSignature: !!config.signature
+                }));
+
+                var checkout = new WidgetCheckout(config);
+                checkout.open(function (result) {
+                    var transaction = result ? result.transaction : {};
+                    var status = (transaction && transaction.status) ? transaction.status : 'PENDING';
+                    console.log('Transacción finalizada. ID: ', transaction ? transaction.id : 'N/A', ' Estado: ', status);
+                    if (redirectUrl) {
+                        var separator = redirectUrl.indexOf('?') !== -1 ? '&' : '?';
+                        var targetUrl = redirectUrl + separator + 'status=' + encodeURIComponent(status) + '&ref=' + encodeURIComponent(reference || '');
+                        if (transaction && transaction.id) {
+                            targetUrl += '&wompi_id=' + encodeURIComponent(transaction.id);
+                        }
+                        window.location.href = targetUrl;
+                    }
+                });
+            } catch (err) {
+                console.error('Error al inicializar Widget Wompi:', err);
+                if (redirectUrl) {
+                    var separator = redirectUrl.indexOf('?') !== -1 ? '&' : '?';
+                    window.location.href = redirectUrl + separator + 'status=ERROR&ref=' + encodeURIComponent(reference || '');
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>

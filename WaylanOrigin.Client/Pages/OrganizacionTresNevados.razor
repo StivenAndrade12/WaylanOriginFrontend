@@ -1,0 +1,162 @@
+@page "/organizacion/tres-nevados"
+
+@inject ApiService Api
+@using WaylanOrigin.Client.Models
+
+<div class="tresnevados-container">
+
+    <!-- Breadcrumb -->
+    <div class="tn-breadcrumb">
+        <a href="productores"><span class="arrow">←</span> Productores Aliados</a>
+        <span class="separator">&gt;</span>
+        <span class="active">@org?.Nombre</span>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="tn-hero">
+        <div class="tn-hero-info">
+            <h1 class="tn-main-title">@org?.Nombre</h1>
+
+            <div class="separador-contenedor">
+                <img src="@org?.ImagenLogo" alt="Logo @org?.Nombre" class="icono-hoja">
+                <div class="linea-dorada"></div>
+            </div>
+
+            <div class="contenido-texto">
+                <p class="texto-descripcion">@org?.Descripcion1</p>
+                <p class="texto-descripcion">@org?.Descripcion2</p>
+            </div>
+        </div>
+
+        <div class="tn-hero-image">
+            <img src="@org?.HeroImagen" alt="@org?.Nombre" />
+        </div>
+    </div>
+
+    <!-- Panel de estadísticas -->
+    <div class="tn-stats-panel">
+
+        <div class="tn-stat-item">
+            <div class="tn-stat-icon">
+                <img src="logotipo/org1.png" class="tn-icon-img" alt="Icono">
+            </div>
+            <!-- Año escrito directo -->
+            <h3 class="tn-stat-number">2015</h3>
+            <p class="tn-stat-label">Año de fundación</p>
+        </div>
+
+        <div class="tn-stat-item">
+            <div class="tn-stat-icon">
+                <img src="logotipo/org2.png" class="tn-icon-img" alt="Icono">
+            </div>
+            <!-- Familias escrito directo -->
+            <h3 class="tn-stat-number">120+</h3>
+            <p class="tn-stat-label">Familias caficultoras</p>
+        </div>
+
+        <div class="tn-stat-item">
+            <div class="tn-stat-icon">
+                <img src="logotipo/org3.png" class="tn-icon-img" alt="Icono">
+            </div>
+            <!-- Hectáreas escrito directo -->
+            <h3 class="tn-stat-number">450</h3>
+            <p class="tn-stat-label">Hectáreas cultivadas</p>
+        </div>
+
+    </div>
+
+    <!-- Productores Grid Section -->
+    <div class="tn-section-title-bar">
+        <h2>Productores que hacen parte de @org?.Nombre</h2>
+        <a href="productores/todos" class="tn-view-all">VER TODOS ➔</a>
+    </div>
+
+    <div class="tn-productores-grid">
+
+        @if (destacados != null)
+        {
+            @foreach (var p in destacados)
+            {
+                <div class="tn-producer-card">
+                    <a href="perfil/@p.Id" class="tn-card-img" aria-label="Ver perfil de @p.Nombre">
+                        <img src="@Api.GetFullImageUrl(p.ImagenPrincipal)" alt="@p.Nombre"
+                             onerror="this.onerror=null;this.src='imagenes/productores/juan_carlos_restrepo.jpg';" />
+                    </a>
+                    <div class="tn-card-content">
+                        <h3><a href="perfil/@p.Id" style="color: inherit; text-decoration: none;">@p.Nombre</a></h3>
+
+                        <a href="perfil/@p.Id" class="tn-btn-profile">VER PERFIL ➔</a>
+                    </div>
+                </div>
+            }
+        }
+
+        <div class="tn-producer-card tn-more-card">
+            <div class="tn-more-content">
+                <div class="tn-user-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" stroke-width="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                <p>Más productores</p>
+               <a href="productores/todos?orgId=1" class="tn-btn-profile" style="text-decoration: none;">VER TODOS ➔</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    OrganizationModel? org;
+    List<ProductorModel> productores = new List<ProductorModel>();
+    List<ProductorModel> destacados = new List<ProductorModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Cargar las organizaciones reales desde la BD
+        var listaOrganizaciones = await Api.GetOrganizacionesAsync();
+
+        if (listaOrganizaciones != null && listaOrganizaciones.Count > 0)
+        {
+            // Buscamos Tres Nevados en la base de datos por su ID o Nombre
+            org = listaOrganizaciones.FirstOrDefault(o => o.Id == 1)
+                  ?? listaOrganizaciones.FirstOrDefault(o => o.Nombre != null && o.Nombre.Contains("Nevados",
+StringComparison.OrdinalIgnoreCase))
+                  ?? listaOrganizaciones.FirstOrDefault();
+        }
+
+        if (org == null)
+        {
+            org = new OrganizationModel
+            {
+                Id = 1,
+                Nombre = "Tres Nevados",
+                ImagenLogo = "logotipo/org1.png",
+                HeroImagen = "imagenes/camp.png",
+                Descripcion1 = "Organización caficultora de las laderas de los Nevados.",
+                Descripcion2 = "Dedicados a la producción de cafés de alta especialidad."
+            };
+        }
+
+        // 2. Cargar productores desde la API con forceRefresh
+        var todos = await Api.GetProductoresAsync(forceRefresh: true);
+
+        if (todos != null)
+        {
+            // IGUAL QUE EN FAMYCAFÉ: Compara por IdOrganizacion O por OrganizacionNombre si el ID viene en 0
+            productores = todos
+                .Where(p => p.IdOrganizacion == org.Id ||
+                            (!string.IsNullOrEmpty(p.OrganizacionNombre) && p.OrganizacionNombre.Contains("Nevados",
+StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            // Únicamente los productores destacados
+            destacados = productores
+                .Where(p => p.Destacado)
+                .Take(4)
+                .ToList();
+        }
+    }
+}

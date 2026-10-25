@@ -1,0 +1,284 @@
+@page "/perfil/{id:int}"
+
+@inject IJSRuntime JS
+@namespace WaylanOrigin.Client.Pages
+@using WaylanOrigin.Client.Models
+@using System.Linq
+@inject ApiService ApiService
+
+<div class="perfil-container">
+
+    @if (productor != null)
+    {
+        <!-- HERO -->
+        <div class="perfil-hero" style="background-image: url('@productor.ImagenPrincipal');
+            background-position: center center;
+            background-size: cover;">
+
+            <div class="breadcrumb">
+                <a href="productores/todos">← Productores Aliados</a>
+                <span class="separator">></span>
+                @if (productor.IdOrganizacion == 2 || (productor.OrganizacionNombre != null && productor.OrganizacionNombre.Contains("FAMYCAFE", StringComparison.OrdinalIgnoreCase)))
+                {
+                    <a href="organizacion/famycafe">FAMYCAFE</a>
+                }
+                else
+                {
+                    <a href="organizacion/tres-nevados">Tres Nevados</a>
+                }
+                <span class="separator">></span>
+                <span class="active">@productor.Nombre</span>
+            </div>
+
+            <div class="perfil-hero-info">
+                <h1 class="perfil-nombre">@productor.Nombre</h1>
+                <p class="perfil-ubicacion">📍 @(string.IsNullOrWhiteSpace(productor.Ubicacion) ? "Colombia" : productor.Ubicacion)</p>
+                <p class="perfil-frase">“@productor.Frase”</p>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="perfil-tabs">
+            <button class="perfil-tab @(tabActiva == "historia" ? "perfil-tab-activo" : "")"
+                    @onclick='() => CambiarTab("historia")'>
+                Historia
+            </button>
+
+            <button class="perfil-tab @(tabActiva == "finca" ? "perfil-tab-activo" : "")"
+                    @onclick='() => CambiarTab("finca")'>
+                Finca
+            </button>
+
+            <button class="perfil-tab @(tabActiva == "procesos" ? "perfil-tab-activo" : "")"
+                    @onclick='() => CambiarTab("procesos")'>
+                Procesos
+            </button>
+        </div>
+
+        <!-- CONTENIDO -->
+        <div class="perfil-contenido 
+            @(tabActiva == "finca" ? "finca-activa" : "") 
+            @(tabActiva == "procesos" ? "procesos-activa" : "")">
+
+            <!-- HISTORIA -->
+            @if (tabActiva == "historia")
+            {
+                <div class="perfil-historia">
+                    <h2>@productor.HistoriaTitulo</h2>
+                    <p class="@(historiaExpandida ? "historia-texto-completo" : "historia-texto-truncado")">@productor.HistoriaTexto</p>
+
+                    <button type="button" class="btn-leer-mas" @onclick="ToggleHistoria">
+                        @(historiaExpandida ? "Leer menos ↑" : "Leer más →")
+                    </button>
+                </div>
+
+                <!-- FICHA TÉCNICA SOLO EN HISTORIA -->
+                <div class="perfil-ficha">
+                    <div class="ficha-grid">
+
+                        <div class="ficha-item border-r border-b">
+                            <img src="logotipo/pr1.png" class="icon-placeholder" />
+                            <div class="ficha-text">
+                                <span class="ficha-valor">1.750 msnm</span>
+                                <span class="ficha-label">Altitud</span>
+                            </div>
+                        </div>
+
+                        <div class="ficha-item border-b">
+                            <img src="logotipo/pr2.png" class="icon-placeholder" />
+                            <div class="ficha-text">
+                                <span class="ficha-valor">Castillo, Caturra</span>
+                                <span class="ficha-label">Variedades</span>
+                            </div>
+                        </div>
+
+                        <div class="ficha-item border-r">
+                            <img src="logotipo/pr3.png" class="icon-placeholder" />
+                            <div class="ficha-text">
+                                <span class="ficha-valor">Lavado de Alta Calidad</span>
+                                <span class="ficha-label">Proceso</span>
+                            </div>
+                        </div>
+
+                        <div class="ficha-item">
+                            <img src="logotipo/pr4.png" class="icon-placeholder" />
+                            <div class="ficha-text">
+                                <span class="ficha-valor">15+ Años</span>
+                                <span class="ficha-label">Experiencia</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            }
+
+            <!-- FINCA -->
+            @if (tabActiva == "finca")
+            {
+                <div class="perfil-finca">
+                    <div class="finca-top-grid">
+                        <div class="finca-texto">
+                            <div class="finca-datos">
+                                <div class="dato-item">
+                                    <div class="dato-icono">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7a5c43"
+                                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                                        </svg>
+                                    </div>
+                                    <div class="dato-textos">
+                                        <span class="dato-valor">1.750 msnm</span>
+                                        <span class="dato-label">Altitud</span>
+                                    </div>
+                                </div>
+
+                                <div class="dato-item">
+                                    <div class="dato-icono">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7a5c43"
+                                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M9.01 14v4M12.01 16v4M15.01 14v4" />
+                                        </svg>
+                                    </div>
+                                    <div class="dato-textos">
+                                        <span class="dato-valor">Clima ideal</span>
+                                        <span class="dato-label">Para el café</span>
+                                    </div>
+                                </div>
+
+                                <div class="dato-item">
+                                    <div class="dato-icono">
+                                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7a5c43"
+                                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c0 2-2 7.5-7 11.5M19 2c-2.5 2-7.5 4-11.5 9" />
+                                        </svg>
+                                    </div>
+                                    <div class="dato-textos">
+                                        <span class="dato-valor">Producción</span>
+                                        <span class="dato-label">Sostenible</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="finca-bottom-banner">
+                        <div class="banner-izq">
+                            <div class="banner-icono">
+                                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7a5c43" stroke-width="1.5"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 10V22M12 10a4 4 0 0 0-4-4H4v4a4 4 0 0 0 4 4h4M12 10a4 4 0 0 1 4-4h4v4a4 4 0 0 1-4 4h-4" />
+                                </svg>
+                            </div>
+                            <p class="finca-extra">
+                                Cuidamos cada detalle de nuestra finca para entregar un café que refleje nuestro compromiso con la calidad y la sostenibilidad.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- PROCESOS -->
+            @if (tabActiva == "procesos")
+            {
+                <div class="perfil-procesos">
+                    <div class="procesos-top-grid">
+                        <div class="procesos-intro">
+                            <h2>Procesos</h2>
+                            <div class="procesos-sostenibilidad">
+                                <div class="sost-icono">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="#7a5c43" fill="none">
+                                        <path d="M12 2C8 6 6 10 6 14a6 6 0 0 0 12 0c0-4-2-8-6-12z" />
+                                    </svg>
+                                </div>
+                                <p>@productor.SostenibilidadDescripcion</p>
+                            </div>
+                        </div>
+
+                        <div class="procesos-flujo">
+                            @if (productor.Procedimientos != null && productor.Procedimientos.Any())
+                            {
+                                @foreach (var paso in productor.Procedimientos)
+                                {
+                                    <div class="proceso-card">
+                                        <div class="proceso-card-img">
+                                            <img src="@paso.Imagen" alt="@paso.Titulo">
+                                        </div>
+
+                                        <div class="proceso-card-body">
+                                            <div class="proceso-badge">
+                                                <span class="badge-num">@paso.Nombre</span>
+                                            </div>
+
+                                            <h3>@paso.Titulo</h3>
+                                            <p>@paso.Descripcion</p>
+                                        </div>
+                                    </div>
+
+                                    @if (paso != productor.Procedimientos.Last())
+                                    {
+                                        <span class="proceso-flecha">→</span>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="procesos-footer-banner">
+                        <div class="banner-izq">
+                            <div class="banner-icono">
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="#7a5c43" fill="none">
+                                    <path d="M12 10V22" />
+                                </svg>
+                            </div>
+                            <p>Procesos certificados enfocados en la conservación ambiental.</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private ProductorModel? productor;
+    private string tabActiva = "historia";
+    private bool historiaExpandida = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Obtener del backend usando el ID entero
+        productor = await ApiService.GetProductorByIdAsync(id);
+
+        // 3. Objeto por defecto si no existe
+        if (productor == null)
+        {
+            productor = new ProductorModel
+            {
+                Id = id,
+                Nombre = "Productor no encontrado",
+                Frase = "",
+                HistoriaTitulo = "",
+                HistoriaTexto = "",
+                SostenibilidadDescripcion = "",
+                ImagenPrincipal = "imagenes/camp.png",
+                Procedimientos = new List<ProcedimientoModel>()
+            };
+        }
+    }
+
+    private void ToggleHistoria()
+    {
+        historiaExpandida = !historiaExpandida;
+    }
+
+    private async Task MoverGaleria(int px)
+    {
+        await JS.InvokeVoidAsync("eval", $"document.querySelector('.perfil-galeria').scrollBy({{ left: {px}, behavior: 'smooth' }})");
+    }
+
+    void CambiarTab(string tab)
+    {
+        tabActiva = tab;
+    }
+}

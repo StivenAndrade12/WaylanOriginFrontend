@@ -1,0 +1,160 @@
+@page "/organizacion/famycafe"
+
+@inject ApiService Api
+@using WaylanOrigin.Client.Models
+
+<div class="tresnevados-container">
+
+    <!-- Breadcrumb -->
+    <div class="tn-breadcrumb">
+        <a href="productores"><span class="arrow">←</span> Productores Aliados</a>
+        <span class="separator">&gt;</span>
+        <span class="active">@org?.Nombre</span>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="tn-hero">
+        <div class="tn-hero-info">
+            <h1 class="tn-main-title">@org?.Nombre</h1>
+
+            <div class="separador-contenedor">
+                <img src="@(string.IsNullOrEmpty(org?.ImagenLogo) ? "logotipo/fcf.png" : org.ImagenLogo)"
+                     alt="Logo @org?.Nombre" class="icono-hoja">
+                <div class="linea-dorada"></div>
+            </div>
+
+            <div class="contenido-texto">
+                <p class="texto-descripcion">@org?.Descripcion1</p>
+                <p class="texto-descripcion">@org?.Descripcion2</p>
+            </div>
+        </div>
+
+        <div class="tn-hero-image">
+            <img src="@(string.IsNullOrEmpty(org?.HeroImagen) ? "https://storagewaylan.blob.core.windows.net/imagenes/456de9b3-4bd7-4fc2-8097-249e1fcb251b.png" : org.HeroImagen)"
+                 alt="@org?.Nombre" />
+        </div>
+    </div>
+
+    <!-- Panel de estadísticas -->
+    <div class="tn-stats-panel">
+
+        <div class="tn-stat-item">
+            <div class="tn-stat-icon">
+                <img src="logotipo/org1.png" class="tn-icon-img" alt="Icono">
+            </div>
+            <h3 class="tn-stat-number">2012</h3>
+            <p class="tn-stat-label">Año de fundación</p>
+        </div>
+
+        <div class="tn-stat-item">
+            <div class="tn-stat-icon">
+                <img src="logotipo/org2.png" class="tn-icon-img" alt="Icono">
+            </div>
+            <h3 class="tn-stat-number">85+</h3>
+            <p class="tn-stat-label">Familias caficultoras</p>
+        </div>
+
+        <div class="tn-stat-item">
+            <div class="tn-stat-icon">
+                <img src="logotipo/org3.png" class="tn-icon-img" alt="Icono">
+            </div>
+            <h3 class="tn-stat-number">320</h3>
+            <p class="tn-stat-label">Hectáreas cultivadas</p>
+        </div>
+
+    </div>
+
+    <!-- Productores Grid Section -->
+    <div class="tn-section-title-bar">
+        <h2>Productores que hacen parte de @org?.Nombre</h2>
+        <a href="productores/todos" class="tn-view-all">VER TODOS ➔</a>
+    </div>
+
+    <div class="tn-productores-grid">
+
+        @if (destacados != null && destacados.Any())
+        {
+            @foreach (var p in destacados)
+            {
+                <div class="tn-producer-card">
+                    <a href="perfil/@p.Id" class="tn-card-img" aria-label="Ver perfil de @p.Nombre">
+                        <img src="@Api.GetFullImageUrl(p.ImagenPrincipal)" alt="@p.Nombre"
+                             onerror="this.onerror=null;this.src='imagenes/productores/maria_elena_gomez.jpg';" />
+                    </a>
+                    <div class="tn-card-content">
+                        <h3><a href="perfil/@p.Id" style="color: inherit; text-decoration: none;">@p.Nombre</a></h3>
+                        <a href="perfil/@p.Id" class="tn-btn-profile">VER PERFIL ➔</a>
+                    </div>
+                </div>
+            }
+        }
+
+        <div class="tn-producer-card tn-more-card">
+            <div class="tn-more-content">
+                <div class="tn-user-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" stroke-width="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </div>
+                <p>Más productores</p>
+                <a href="productores/todos?orgId=2" class="tn-btn-profile" style="text-decoration: none;">VER TODOS ➔</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+@code {
+    OrganizationModel? org;
+    List<ProductorModel> productores = new List<ProductorModel>();
+    List<ProductorModel> destacados = new List<ProductorModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Cargar las organizaciones reales desde el backend
+        var listaOrganizaciones = await Api.GetOrganizacionesAsync();
+
+        if (listaOrganizaciones != null && listaOrganizaciones.Count > 0)
+        {
+            // Buscamos la organización por ID = 2 o por Nombre que contenga "Famy"
+            org = listaOrganizaciones.FirstOrDefault(o => o.Id == 2)
+                  ?? listaOrganizaciones.FirstOrDefault(o => o.Nombre != null && o.Nombre.Contains("Famy",
+StringComparison.OrdinalIgnoreCase))
+                  ?? listaOrganizaciones.FirstOrDefault();
+        }
+
+        // Modelo institucional por defecto si no se encuentra en la base de datos
+        if (org == null)
+        {
+            org = new OrganizationModel
+            {
+                Id = 2,
+                Nombre = "FAMYCAFE",
+                ImagenLogo = "logotipo/fcf.png",
+                HeroImagen = "https://storagewaylan.blob.core.windows.net/imagenes/456de9b3-4bd7-4fc2-8097-249e1fcb251b.png",
+                Descripcion1 = "Asociación de familias caficultoras del Huila y Tolima, dedicadas al cultivo artesanal y sostenible de cafés especiales con perfiles de taza excepcionales.",
+                Descripcion2 = "A través de procesos innovadores de fermentación y un riguroso cuidado en cada etapa de cosecha, llevamos la riqueza de nuestras tierras a cada taza."
+            };
+        }
+
+        // 2. Cargar productores con forceRefresh para garantizar datos actualizados
+        var todos = await Api.GetProductoresAsync(forceRefresh: true);
+
+        if (todos != null)
+        {
+            // FILTRO ESTRICTO: Únicamente productores asignados al ID de Famycafé o con el nombre explícito
+            productores = todos
+                .Where(p => p.IdOrganizacion == org.Id ||
+                            (!string.IsNullOrEmpty(p.OrganizacionNombre) && p.OrganizacionNombre.Contains("Famy",
+StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            // FILTRO ESTRICTO: Únicamente los productores con el check de Destacado habilitado
+            destacados = productores
+                .Where(p => p.Destacado)
+                .Take(4)
+                .ToList();
+        }
+    }
+}
